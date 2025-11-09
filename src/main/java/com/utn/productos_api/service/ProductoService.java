@@ -1,5 +1,8 @@
 package com.utn.productos_api.service;
 
+import com.utn.productos_api.dto.ActualizarStockDTO;
+import com.utn.productos_api.dto.ProductoDTO;
+import com.utn.productos_api.dto.ProductoResponseDTO;
 import com.utn.productos_api.model.Categoria;
 import com.utn.productos_api.model.Producto;
 import com.utn.productos_api.repository.ProductoRepository;
@@ -7,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 
@@ -15,52 +17,58 @@ import java.util.Optional;
 public class ProductoService {
     private final ProductoRepository productoRepository;
 
-    public Producto crearProducto(Producto producto){
-        if (producto.getNombre() == null || producto.getNombre().isBlank()) {
+    public ProductoResponseDTO crearProducto(ProductoDTO producto){
+        if (producto.nombre() == null || producto.nombre().isBlank()) {
             throw new IllegalArgumentException("El nombre no puede estar vacío");
         }
-        Producto productoCreado = Producto.builder().nombre(producto.getNombre()).descripcion(producto.getDescripcion())
-                .precio(producto.getPrecio()).categoria(producto.getCategoria()).build();
-        return productoRepository.save(productoCreado);
+        Producto productoCreado = Producto.builder().nombre(producto.nombre()).descripcion(producto.descripcion())
+                .precio(producto.precio()).categoria(producto.categoria()).build();
+        return ProductoResponseDTO.fromEntity(productoRepository.save(productoCreado));
     }
 
-    public List<Producto> obtenerTodos() {
-        return productoRepository.findAll();
+    public List<ProductoResponseDTO> obtenerTodos() {
+        return productoRepository.findAll()
+                .stream()
+                .map(ProductoResponseDTO::fromEntity)
+                .toList();
     }
 
-    public Optional<Producto> obtenerPorId(Long id) {
+    public ProductoResponseDTO obtenerPorId(Long id) {
         Producto productoPorId = productoRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("No existe un producto con el ID " + id));
-        return Optional.ofNullable(productoPorId);
+        return ProductoResponseDTO.fromEntity(productoPorId);
     }
 
-    public List<Producto> obtenerPorCategoria(Categoria categoria){
-        return productoRepository.findByCategoria(categoria);
+    public List<ProductoResponseDTO> obtenerPorCategoria(Categoria categoria){
+        return productoRepository.findByCategoria(categoria)
+                .stream()
+                .map(ProductoResponseDTO::fromEntity)
+                .toList();
     }
 
-    public Producto actualizarProducto(Long id, Producto productoActualizado){
+    public ProductoResponseDTO actualizarProducto(Long id, ProductoDTO productoActualizado){
         Producto productoParaActualizar = productoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("No existe un producto con el ID " + id));
-        productoParaActualizar.setNombre(productoActualizado.getNombre());
-        productoParaActualizar.setDescripcion(productoActualizado.getDescripcion());
-        productoParaActualizar.setPrecio(productoActualizado.getPrecio());
-        productoParaActualizar.setStock(productoActualizado.getStock());
-        productoParaActualizar.setCategoria(productoActualizado.getCategoria());
-        return productoRepository.save(productoParaActualizar);
+        productoParaActualizar.setNombre(productoActualizado.nombre());
+        productoParaActualizar.setDescripcion(productoActualizado.descripcion());
+        productoParaActualizar.setPrecio(productoActualizado.precio());
+        productoParaActualizar.setStock(productoActualizado.stock());
+        productoParaActualizar.setCategoria(productoActualizado.categoria());
+        return ProductoResponseDTO.fromEntity(productoRepository.save(productoParaActualizar));
     }
 
-    public Producto actualizarStock(Long id, Integer nuevoStock){
+    public ProductoResponseDTO actualizarStock(Long id, ActualizarStockDTO nuevoStock){
         Producto productoParaActualizar = productoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("No existe un producto con el ID " + id));
-        productoParaActualizar.setStock(nuevoStock);
-        return productoRepository.save(productoParaActualizar);
+        productoParaActualizar.setStock(nuevoStock.stock());
+        return ProductoResponseDTO.fromEntity(productoRepository.save(productoParaActualizar));
     }
 
-    public Producto eliminarProducto(Long id) {
+    public ProductoResponseDTO eliminarProducto(Long id) {
         Producto productoParaEliminar = productoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("No existe un producto con el ID " + id));
         productoRepository.delete(productoParaEliminar);
-        return productoParaEliminar;
+        return ProductoResponseDTO.fromEntity(productoParaEliminar);
     }
 
 }
