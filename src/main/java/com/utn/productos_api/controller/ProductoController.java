@@ -32,7 +32,8 @@ public class ProductoController {
     )
     @GetMapping
     public ResponseEntity<List<ProductoResponseDTO>> listado() {
-        return ResponseEntity.ok(productoService.obtenerTodos());
+        List<ProductoResponseDTO> productos = productoService.obtenerTodos();
+        return ResponseEntity.ok(productos);
     }
 
     @Operation(summary = "Obtener un producto mediante el ID", description = "Devuelve un producto, si existe, con el ID proporcionado")
